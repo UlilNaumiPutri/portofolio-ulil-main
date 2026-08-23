@@ -1,0 +1,258 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useState, useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { motion, AnimatePresence } from "motion/react";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const Header = () => {
+  const pathname = usePathname();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+
+  const navItems = [
+    { href: "/", label: "Beranda" },
+    { href: "/portofolio/produk", label: "Projects" },
+    { href: "/portofolio/sertifikasi", label: "Sertifikat" },
+    { href: "/portofolio/pengalaman", label: "Pengalaman" },
+    { href: "/about", label: "Tentang Saya" },
+  ];
+
+  // Active: exact match untuk "/", startsWith untuk path lain
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+  // GSAP: entrance animation + scroll shrink
+  useGSAP(() => {
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (!headerRef.current) return;
+
+    // --- Entrance: slide-down dari atas ---
+    if (!prefersReduced) {
+      gsap.from(headerRef.current, {
+        yPercent: -100,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power3.out",
+        delay: 0.1,
+      });
+    }
+
+    // --- Scroll shrink: kurangi padding saat scroll ---
+    ScrollTrigger.create({
+      start: "top top",
+      end: "+=120",
+      onUpdate: (self) => {
+        if (prefersReduced) return;
+        const progress = self.progress;
+        gsap.set(headerRef.current, {
+          backdropFilter: `blur(${12 + progress * 12}px)`,
+        });
+      },
+    });
+
+    return () => {
+      ScrollTrigger.getAll().forEach((t) => {
+        if (t.vars.id === "header-scroll") t.kill();
+      });
+    };
+  }, { scope: headerRef });
+
+  return (
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-black/10"
+    >
+      <nav className="container mx-auto px-6 py-4">
+        <div className="flex justify-between items-center">
+
+          {/* Logo */}
+          <Link href="/" className="group flex items-center gap-2">
+            <motion.div
+              className="relative"
+              whileHover={{ scale: 1.08, rotate: 4 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg group-hover:transition-shadow duration-300" style={{ boxShadow: "0 4px 16px rgba(255,200,221,0.35)" }}>
+                <Image src="/img/profile/ulil.jpeg" alt="Putri" fill unoptimized className="object-cover" />
+              </div>
+
+            </motion.div>
+            <span className="text-xl font-bold text-gray-800 hidden sm:block">
+              Putri
+            </span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <ul className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={`relative px-6 py-2.5 rounded-full font-medium transition-colors duration-200 ${
+                    isActive(item.href)
+                      ? "text-gray-900"
+                      : "text-zinc-600 hover:text-gray-900"
+                  }`}
+                >
+                  {/* Active pill background */}
+                  {isActive(item.href) && (
+                    <motion.span
+                      layoutId="nav-active-pill"
+                      className="absolute inset-0 bg-white rounded-full shadow-lg"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10">{item.label}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          {/* CTA Buttons */}
+          <div className="hidden md:flex items-center gap-3">
+            {/* Unduh CV */}
+            <motion.a
+              href="/cv/ulil-cv-portofolio.pdf"
+              download="CV dan Portofolio Putri.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-5 py-2.5 text-gray-700 font-medium rounded-full border transition-colors duration-200"
+              style={{ backgroundColor: "rgba(188,224,255,0.2)", borderColor: "rgba(188,224,255,0.6)" }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLAnchorElement).style.backgroundColor = "rgba(188,224,255,0.4)";
+                (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(188,224,255,0.9)";
+                (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 4px 14px rgba(188,224,255,0.35)";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLAnchorElement).style.backgroundColor = "rgba(188,224,255,0.2)";
+                (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(188,224,255,0.6)";
+                (e.currentTarget as HTMLAnchorElement).style.boxShadow = "";
+              }}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              aria-label="Unduh CV"
+            >
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              </svg>
+              <span>CV</span>
+            </motion.a>
+
+          </div>
+
+          {/* Mobile Menu Button */}
+          <motion.button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden w-10 h-10 flex items-center justify-center rounded-lg bg-black/5 hover:bg-black/10 transition-colors"
+            aria-label="Toggle menu"
+            whileTap={{ scale: 0.9 }}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              {isMenuOpen ? (
+                <motion.svg
+                  key="close"
+                  className="w-6 h-6 text-gray-700"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  initial={{ rotate: -90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 90, opacity: 0 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </motion.svg>
+              ) : (
+                <motion.svg
+                  key="open"
+                  className="w-6 h-6 text-gray-700"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  initial={{ rotate: 90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: -90, opacity: 0 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </motion.svg>
+              )}
+            </AnimatePresence>
+          </motion.button>
+        </div>
+
+        {/* Mobile Menu — AnimatePresence untuk smooth open/close */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              className="md:hidden mt-4 pb-4 overflow-hidden"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <ul className="space-y-2">
+                {navItems.map((item, i) => (
+                  <motion.li
+                    key={item.href}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                  >
+                    <Link
+                      href={item.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`block px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
+                        isActive(item.href)
+                          ? "bg-gray-900 text-white"
+                          : "bg-black/5 text-zinc-600 hover:bg-black/10"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  </motion.li>
+                ))}
+
+                {/* Unduh CV — Mobile */}
+                <motion.li
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: navItems.length * 0.06 }}
+                >
+                  <a
+                    href="/cv/aesar-cv.pdf"
+                    download="Aesar-CV.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2 px-6 py-3 font-medium rounded-xl transition-all duration-300"
+                    style={{ backgroundColor: "rgba(188,224,255,0.25)", color: "#3a6a8f", border: "1px solid rgba(188,224,255,0.6)" }}
+                  >
+                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                    </svg>
+                    Unduh CV
+                  </a>
+                </motion.li>
+
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </nav>
+    </header>
+  );
+};
+
+export default Header;

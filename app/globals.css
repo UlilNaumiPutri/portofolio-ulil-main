@@ -1,0 +1,51 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  --background: #FAFAFA;
+  --foreground: #1a1a1a;
+  --navbar-height: 72px; /* Tinggi navbar (py-4 + konten ~40px) */
+  /* font-family: 'Plus Jakarta Sans', sans-serif; */
+}
+
+@theme inline {
+  --color-background: #FAFAFA;
+  --color-foreground: #1a1a1a;
+  --font-logo: "Poppins", sans-serif;
+  --font-heading: "Fraunces", serif;
+
+  /* Brand pastel palette */
+  --color-brand-pink: #FFC8DD;       /* pink pastel — untuk fill/border/blob */
+  --color-brand-pink-text: #c05878;  /* pink pastel gelap — untuk teks (kontras ≥ 4.5:1 di atas putih) */
+  --color-brand-blue: #BCE0FF;       /* biru muda pastel — untuk fill/blob */
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --background: #FAFAFA;
+    --foreground: #1a1a1a;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+* {
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading), serif;
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  padding: 24px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
